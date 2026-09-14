@@ -1,481 +1,181 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>SP - Struk POM/SPBU</title>
-  <!-- Tailwind CSS CDN -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Lucide Icons CDN -->
-  <script src="https://unpkg.com/lucide@latest"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SP - Struk POM</title>
   <style>
-    body {
-      background-color: #121418;
-      color: #f3f4f6;
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    :root {
+      --bg-dark: #121318;
+      --card-bg: #1c1e24;
+      --card-border: #2a2d37;
+      --accent: #00e676;
+      --text-main: #ffffff;
+      --text-sub: #9e9e9e;
     }
-    .font-custom-struk {
-      font-family: 'StrukCustomFont', monospace;
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; }
+    body { background-color: var(--bg-dark); color: var(--text-main); padding: 12px; }
+
+    /* Top Bar */
+    .top-bar { display: flex; justify-content: space-between; align-items: center; padding: 10px 4px; margin-bottom: 12px; }
+    .app-title { font-size: 18px; font-weight: bold; }
+
+    /* Dashboard Grid (Seperti Screenshot Google Play) */
+    .grid-container { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 20px; }
+    .grid-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 10px;
+      padding: 16px 12px;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 8px;
+      cursor: pointer;
     }
-    @media print {
-      body * {
-        visibility: hidden;
-      }
-      #area-cetak-struk, #area-cetak-struk * {
-        visibility: visible;
-      }
-      #area-cetak-struk {
-        position: absolute;
-        left: 0;
-        top: 0;
-        width: 100%;
-        color: black;
-        background: white;
-      }
+    .grid-card:active { background: #252830; }
+    .card-icon { font-size: 20px; color: var(--accent); }
+    .card-title { font-size: 14px; font-weight: 600; }
+    .card-desc { font-size: 11px; color: var(--text-sub); }
+
+    /* Section Views */
+    .section-view { display: none; background: var(--card-bg); border-radius: 10px; padding: 16px; border: 1px solid var(--card-border); }
+    .active-view { display: block; }
+
+    /* Form Styles */
+    .form-group { margin-bottom: 12px; }
+    label { font-size: 12px; color: var(--text-sub); display: block; margin-bottom: 4px; }
+    input, select {
+      width: 100%; padding: 10px; background: #121318; border: 1px solid var(--card-border);
+      border-radius: 6px; color: #fff; font-size: 14px;
+    }
+    
+    /* Quick Nominal Buttons */
+    .quick-buttons { display: flex; gap: 6px; margin-top: 6px; flex-wrap: wrap; }
+    .btn-quick {
+      background: #2a2d37; border: none; color: #fff; padding: 6px 10px;
+      border-radius: 4px; font-size: 12px; cursor: pointer;
+    }
+
+    /* Action Buttons */
+    .btn-primary {
+      width: 100%; background: var(--accent); color: #000; font-weight: bold;
+      padding: 12px; border: none; border-radius: 6px; margin-top: 10px; cursor: pointer;
+    }
+
+    /* Struk Thermal Preview */
+    .receipt-preview {
+      background: #fff; color: #000; font-family: 'Courier New', monospace;
+      padding: 14px; font-size: 12px; border-radius: 4px; white-space: pre-wrap; margin-top: 12px;
     }
   </style>
 </head>
-<body class="p-4 max-w-md mx-auto flex flex-col min-h-screen justify-between">
+<body>
 
   <!-- Header -->
-  <div>
-    <header class="flex justify-between items-center py-4 mb-2">
-      <div class="flex items-center space-x-3">
-        <button class="text-gray-300 hover:text-white">
-          <i data-lucide="menu" class="w-6 h-6"></i>
-        </button>
-        <div>
-          <h1 class="text-xl font-bold leading-none">SP</h1>
-          <span class="text-xs text-gray-400">v1.17.054</span>
-        </div>
-      </div>
-      <button class="text-gray-300 hover:text-white">
-        <i data-lucide="gift" class="w-6 h-6"></i>
-      </button>
-    </header>
+  <div class="top-bar">
+    <div class="app-title">Struk POM</div>
+    <button onclick="showSection('dashboard')" style="background:none; border:none; color:var(--accent);">Menu Utama</button>
+  </div>
 
-    <!-- Status Koneksi Database -->
-    <div id="status-card" class="bg-gray-800/80 p-3 rounded-xl border border-gray-700/50 mb-4 text-xs text-gray-300 flex justify-between items-center">
-      <span>Status Database: <strong id="status-text" class="text-yellow-400">Menghubungkan...</strong></span>
-      <button onclick="fetchDataSPBU()" class="bg-gray-700 hover:bg-gray-600 px-2 py-1 rounded text-white text-xs">Refresh</button>
+  <!-- Main Dashboard Grid -->
+  <div id="dashboard" class="grid-container">
+    <div class="grid-card" onclick="showSection('form-pom')">
+      <div class="card-icon">⛽</div>
+      <div class="card-title">POM</div>
+      <div class="card-desc">Catat transaksi BBM</div>
     </div>
-
-    <!-- Grid Menu Utama -->
-    <div class="grid grid-cols-2 gap-3 mb-4">
-      
-      <!-- Card: Histori -->
-      <div onclick="openMenu('Histori')" class="bg-gray-800/60 hover:bg-gray-800 border border-gray-700/40 p-4 rounded-2xl cursor-pointer transition">
-        <div class="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center text-white mb-3">
-          <i data-lucide="history" class="w-5 h-5"></i>
-        </div>
-        <h2 class="font-semibold text-sm">Histori</h2>
-        <p class="text-xs text-gray-400">Riwayat transaksi</p>
-      </div>
-
-      <!-- Card: POM -->
-      <div onclick="openMenu('POM')" class="bg-gray-800/60 hover:bg-gray-800 border border-gray-700/40 p-4 rounded-2xl cursor-pointer transition">
-        <div class="w-10 h-10 rounded-xl bg-red-500 flex items-center justify-center text-white mb-3">
-          <i data-lucide="fuel" class="w-5 h-5"></i>
-        </div>
-        <h2 class="font-semibold text-sm">POM</h2>
-        <p class="text-xs text-gray-400">Catat transaksi</p>
-      </div>
-
-      <!-- Card: Arsip -->
-      <div onclick="openMenu('Arsip')" class="bg-gray-800/60 hover:bg-gray-800 border border-gray-700/40 p-4 rounded-2xl cursor-pointer transition">
-        <div class="w-10 h-10 rounded-xl bg-amber-500 flex items-center justify-center text-white mb-3">
-          <i data-lucide="image" class="w-5 h-5"></i>
-        </div>
-        <h2 class="font-semibold text-sm">Arsip</h2>
-        <p class="text-xs text-gray-400">Gambar tersimpan</p>
-      </div>
-
-      <!-- Card: Struk -->
-      <div onclick="openMenu('Struk')" class="bg-gray-800/60 hover:bg-gray-800 border border-gray-700/40 p-4 rounded-2xl cursor-pointer transition">
-        <div class="w-10 h-10 rounded-xl bg-emerald-500 flex items-center justify-center text-white mb-3">
-          <i data-lucide="file-edit" class="w-5 h-5"></i>
-        </div>
-        <h2 class="font-semibold text-sm">Struk</h2>
-        <p class="text-xs text-gray-400">Pilih, edit & cetak</p>
-      </div>
-
+    <div class="grid-card" onclick="showSection('histori')">
+      <div class="card-icon">📋</div>
+      <div class="card-title">Histori</div>
+      <div class="card-desc">Riwayat transaksi</div>
     </div>
-
-    <!-- Accordion: Contoh Struk -->
-    <div onclick="openMenu('Struk')" class="bg-gray-800/60 border border-gray-700/40 rounded-2xl p-4 mb-4 flex justify-between items-center cursor-pointer hover:bg-gray-800">
-      <span class="font-medium text-sm">Contoh struk</span>
-      <i data-lucide="chevron-down" class="w-5 h-5 text-gray-400"></i>
+    <div class="grid-card" onclick="showSection('bbm')">
+      <div class="card-icon">💵</div>
+      <div class="card-title">Harga BBM</div>
+      <div class="card-desc">Kelola harga produk</div>
     </div>
-
-    <!-- Grid Menu Sekunder -->
-    <div class="grid grid-cols-2 gap-3 mb-6">
-      
-      <!-- Card: Operator -->
-      <div onclick="openMenu('Operator')" class="bg-gray-800/60 hover:bg-gray-800 border border-gray-700/40 p-4 rounded-2xl cursor-pointer transition">
-        <div class="w-10 h-10 rounded-xl bg-indigo-500 flex items-center justify-center text-white mb-3">
-          <i data-lucide="user-cog" class="w-5 h-5"></i>
-        </div>
-        <h2 class="font-semibold text-sm">Operator</h2>
-        <p class="text-xs text-gray-400">Tambah nama</p>
-      </div>
-
-      <!-- Card: BBM -->
-      <div onclick="openMenu('BBM')" class="bg-gray-800/60 hover:bg-gray-800 border border-gray-700/40 p-4 rounded-2xl cursor-pointer transition">
-        <div class="w-10 h-10 rounded-xl bg-pink-500 flex items-center justify-center text-white mb-3">
-          <i data-lucide="gauge" class="w-5 h-5"></i>
-        </div>
-        <h2 class="font-semibold text-sm">BBM</h2>
-        <p class="text-xs text-gray-400">Update harga</p>
-      </div>
-
-      <!-- Card: SPBU -->
-      <div onclick="openMenu('SPBU')" class="bg-gray-800/60 hover:bg-gray-800 border border-gray-700/40 p-4 rounded-2xl cursor-pointer transition">
-        <div class="w-10 h-10 rounded-xl bg-teal-500 flex items-center justify-center text-white mb-3">
-          <i data-lucide="building-2" class="w-5 h-5"></i>
-        </div>
-        <h2 class="font-semibold text-sm">SPBU</h2>
-        <p class="text-xs text-gray-400">Edit alamat</p>
-      </div>
-
-      <!-- Card: Font -->
-      <div onclick="openMenu('Font')" class="bg-gray-800/60 hover:bg-gray-800 border border-gray-700/40 p-4 rounded-2xl cursor-pointer transition">
-        <div class="w-10 h-10 rounded-xl bg-indigo-400 flex items-center justify-center text-white mb-3">
-          <i data-lucide="type" class="w-5 h-5"></i>
-        </div>
-        <h2 class="font-semibold text-sm">Font</h2>
-        <p class="text-xs text-gray-400">Upload .ttf .otf</p>
-      </div>
-
+    <div class="grid-card" onclick="showSection('operator')">
+      <div class="card-icon">👤</div>
+      <div class="card-title">Operator</div>
+      <div class="card-desc">Tambah nama petugas</div>
     </div>
   </div>
 
-  <!-- ==================== MODAL DIALOGS ==================== -->
-
-  <!-- Modal 1: POM / Catat Transaksi -->
-  <div id="modal-pom" class="hidden fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-50">
-    <div class="bg-gray-800 p-6 rounded-2xl w-full max-w-sm border border-gray-700">
-      <h3 class="text-lg font-bold mb-4">Catat Transaksi SPBU</h3>
-      <form onsubmit="simpanData(event, 'Transaksi')">
-        <div class="mb-3">
-          <label class="block text-xs text-gray-400 mb-1">Jenis BBM</label>
-          <select id="input-bbm" class="w-full bg-gray-700 text-white p-2 rounded-xl border border-gray-600 text-sm">
-            <option value="Pertalite">Pertalite</option>
-            <option value="Pertamax">Pertamax</option>
-            <option value="Solar">Solar</option>
-          </select>
-        </div>
-        <div class="mb-3">
-          <label class="block text-xs text-gray-400 mb-1">Jumlah Liter</label>
-          <input type="number" step="0.01" id="input-liter" required class="w-full bg-gray-700 text-white p-2 rounded-xl border border-gray-600 text-sm" placeholder="10.5">
-        </div>
-        <div class="mb-3">
-          <label class="block text-xs text-gray-400 mb-1">Total Harga (Rp)</label>
-          <input type="number" id="input-total" required class="w-full bg-gray-700 text-white p-2 rounded-xl border border-gray-600 text-sm" placeholder="100000">
-        </div>
-        <div class="mb-4">
-          <label class="block text-xs text-gray-400 mb-1">Operator</label>
-          <input type="text" id="input-operator" required class="w-full bg-gray-700 text-white p-2 rounded-xl border border-gray-600 text-sm" placeholder="Nama Operator">
-        </div>
-        <div class="flex space-x-2">
-          <button type="button" onclick="closeModal('modal-pom')" class="w-1/2 bg-gray-600 py-2 rounded-xl text-sm font-medium">Batal</button>
-          <button type="submit" class="w-1/2 bg-red-600 hover:bg-red-500 py-2 rounded-xl text-sm font-medium">Simpan</button>
-        </div>
-      </form>
+  <!-- Form Transaksi POM -->
+  <div id="form-pom" class="section-view">
+    <h3>Input Transaksi POM</h3>
+    <br>
+    <div class="form-group">
+      <label>Jenis BBM</label>
+      <select id="jenisBBM">
+        <option value="Pertalite">Pertalite (Rp 10.000)</option>
+        <option value="Pertamax">Pertamax (Rp 12.950)</option>
+        <option value="Solar">Solar (Rp 6.800)</option>
+      </select>
     </div>
-  </div>
 
-  <!-- Modal 2: Histori Transaksi -->
-  <div id="modal-histori" class="hidden fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-50">
-    <div class="bg-gray-800 p-6 rounded-2xl w-full max-w-sm border border-gray-700 flex flex-col max-h-[80vh]">
-      <h3 class="text-lg font-bold mb-3">Histori Transaksi</h3>
-      <div id="histori-list" class="overflow-y-auto space-y-2 mb-4 pr-1 text-xs">
-        <p class="text-gray-400">Memuat riwayat...</p>
-      </div>
-      <button onclick="closeModal('modal-histori')" class="w-full bg-gray-600 py-2 rounded-xl text-sm font-medium">Tutup</button>
-    </div>
-  </div>
-
-  <!-- Modal 3: Operator -->
-  <div id="modal-operator" class="hidden fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-50">
-    <div class="bg-gray-800 p-6 rounded-2xl w-full max-w-sm border border-gray-700">
-      <h3 class="text-lg font-bold mb-4">Tambah Operator</h3>
-      <form onsubmit="simpanData(event, 'Operator')">
-        <div class="mb-4">
-          <label class="block text-xs text-gray-400 mb-1">Nama Operator Baru</label>
-          <input type="text" id="op-nama" required class="w-full bg-gray-700 text-white p-2 rounded-xl border border-gray-600 text-sm" placeholder="Contoh: Ahmad">
-        </div>
-        <div class="flex space-x-2">
-          <button type="button" onclick="closeModal('modal-operator')" class="w-1/2 bg-gray-600 py-2 rounded-xl text-sm font-medium">Batal</button>
-          <button type="submit" class="w-1/2 bg-indigo-600 hover:bg-indigo-500 py-2 rounded-xl text-sm font-medium">Tambah</button>
-        </div>
-      </form>
-    </div>
-  </div>
-
-  <!-- Modal 4: Update Harga BBM -->
-  <div id="modal-bbm" class="hidden fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-50">
-    <div class="bg-gray-800 p-6 rounded-2xl w-full max-w-sm border border-gray-700">
-      <h3 class="text-lg font-bold mb-4">Update Harga BBM</h3>
-      <form onsubmit="simpanData(event, 'Harga_BBM')">
-        <div class="mb-3">
-          <label class="block text-xs text-gray-400 mb-1">Nama Jenis BBM</label>
-          <input type="text" id="bbm-nama" required class="w-full bg-gray-700 text-white p-2 rounded-xl border border-gray-600 text-sm" placeholder="Pertalite / Pertamax">
-        </div>
-        <div class="mb-4">
-          <label class="block text-xs text-gray-400 mb-1">Harga per Liter (Rp)</label>
-          <input type="number" id="bbm-harga" required class="w-full bg-gray-700 text-white p-2 rounded-xl border border-gray-600 text-sm" placeholder="10000">
-        </div>
-        <div class="flex space-x-2">
-          <button type="button" onclick="closeModal('modal-bbm')" class="w-1/2 bg-gray-600 py-2 rounded-xl text-sm font-medium">Batal</button>
-          <button type="submit" class="w-1/2 bg-pink-600 hover:bg-pink-500 py-2 rounded-xl text-sm font-medium">Update</button>
-        </div>
-      </form>
-    </div>
-  </div>
-
-  <!-- Modal 5: Edit Profil SPBU -->
-  <div id="modal-spbu" class="hidden fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-50">
-    <div class="bg-gray-800 p-6 rounded-2xl w-full max-w-sm border border-gray-700">
-      <h3 class="text-lg font-bold mb-4">Edit Informasi SPBU</h3>
-      <form onsubmit="simpanData(event, 'Profil_SPBU')">
-        <div class="mb-3">
-          <label class="block text-xs text-gray-400 mb-1">Nama / Kode SPBU</label>
-          <input type="text" id="spbu-nama" required class="w-full bg-gray-700 text-white p-2 rounded-xl border border-gray-600 text-sm" placeholder="SPBU PASTI PAS 44.501.01">
-        </div>
-        <div class="mb-4">
-          <label class="block text-xs text-gray-400 mb-1">Alamat Lengkap</label>
-          <textarea id="spbu-alamat" required class="w-full bg-gray-700 text-white p-2 rounded-xl border border-gray-600 text-sm" rows="3" placeholder="Jl. Banyumeneng No. 12"></textarea>
-        </div>
-        <div class="flex space-x-2">
-          <button type="button" onclick="closeModal('modal-spbu')" class="w-1/2 bg-gray-600 py-2 rounded-xl text-sm font-medium">Batal</button>
-          <button type="submit" class="w-1/2 bg-teal-600 hover:bg-teal-500 py-2 rounded-xl text-sm font-medium">Simpan</button>
-        </div>
-      </form>
-    </div>
-  </div>
-
-  <!-- Modal 6: Arsip Gambar Struk -->
-  <div id="modal-arsip" class="hidden fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-50">
-    <div class="bg-gray-800 p-6 rounded-2xl w-full max-w-sm border border-gray-700 text-center">
-      <h3 class="text-lg font-bold mb-3">Arsip Struk</h3>
-      <div id="arsip-container" class="text-xs text-gray-400 mb-4 min-h-[100px] flex items-center justify-center border border-dashed border-gray-700 rounded-xl p-4">
-        Belum ada gambar struk tersimpan.
-      </div>
-      <button onclick="closeModal('modal-arsip')" class="w-full bg-gray-600 py-2 rounded-xl text-sm font-medium">Tutup</button>
-    </div>
-  </div>
-
-  <!-- Modal 7: Struk & Simulator Cetak -->
-  <div id="modal-struk" class="hidden fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-50">
-    <div class="bg-gray-800 p-6 rounded-2xl w-full max-w-sm border border-gray-700 text-center max-h-[90vh] overflow-y-auto">
-      <h3 class="text-lg font-bold mb-3">Preview Struk</h3>
-      
-      <!-- Struk Display Target Print -->
-      <div id="area-cetak-struk" class="bg-white text-black p-4 rounded text-left font-mono font-custom-struk text-xs mb-4 shadow">
-        <p id="preview-nama" class="text-center font-bold">SPBU 44.501.01</p>
-        <p id="preview-alamat" class="text-center text-[10px] border-b border-black pb-1 mb-2">Desa Banyumeneng</p>
-        <div class="space-y-0.5 text-[11px]">
-          <p>Tgl: <span id="preview-tgl">15/09/2026</span></p>
-          <p>BBM: <span id="preview-bbm">Pertalite</span></p>
-          <p>Liter: <span id="preview-liter">10.00</span> L</p>
-          <p class="font-bold">Total: Rp <span id="preview-total">100.000</span></p>
-          <p>Op: <span id="preview-operator">Zain</span></p>
-        </div>
-        <p class="border-t border-black mt-2 pt-1 text-center text-[10px]">Terima Kasih & Selamat Jalan</p>
-      </div>
-
-      <!-- Quick Edit Struk -->
-      <div class="text-left mb-4 space-y-2 text-xs">
-        <div>
-          <label class="text-gray-400">Ubah Nama BBM:</label>
-          <input type="text" value="Pertalite" oninput="document.getElementById('preview-bbm').innerText=this.value" class="w-full bg-gray-700 p-1.5 rounded border border-gray-600 text-white mt-1">
-        </div>
-        <div>
-          <label class="text-gray-400">Ubah Total Rp:</label>
-          <input type="text" value="100.000" oninput="document.getElementById('preview-total').innerText=this.value" class="w-full bg-gray-700 p-1.5 rounded border border-gray-600 text-white mt-1">
-        </div>
-      </div>
-
-      <div class="flex space-x-2">
-        <button onclick="closeModal('modal-struk')" class="w-1/2 bg-gray-600 py-2 rounded-xl text-sm font-medium">Tutup</button>
-        <button onclick="window.print()" class="w-1/2 bg-emerald-600 hover:bg-emerald-500 py-2 rounded-xl text-sm font-medium">Cetak</button>
+    <div class="form-group">
+      <label>Total Pembelian (Rp)</label>
+      <input type="number" id="totalBayar" placeholder="50000">
+      <div class="quick-buttons">
+        <button class="btn-quick" onclick="setNominal(10000)">+10.000</button>
+        <button class="btn-quick" onclick="setNominal(20000)">+20.000</button>
+        <button class="btn-quick" onclick="setNominal(50000)">Rp 50.000</button>
+        <button class="btn-quick" onclick="setNominal(100000)">Rp 100.000</button>
       </div>
     </div>
-  </div>
 
-  <!-- Modal 8: Custom Font Upload -->
-  <div id="modal-font" class="hidden fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-50">
-    <div class="bg-gray-800 p-6 rounded-2xl w-full max-w-sm border border-gray-700">
-      <h3 class="text-lg font-bold mb-3">Upload Custom Font</h3>
-      <p class="text-xs text-gray-400 mb-3">Pilih file font (.ttf / .otf) dari perangkat untuk mengubah gaya tulisan struk.</p>
-      <input type="file" id="font-file-input" accept=".ttf,.otf" class="w-full text-xs text-gray-400 mb-4 bg-gray-700 p-2 rounded-xl border border-gray-600">
-      <div class="flex space-x-2">
-        <button onclick="closeModal('modal-font')" class="w-1/2 bg-gray-600 py-2 rounded-xl text-sm font-medium">Batal</button>
-        <button onclick="applyCustomFont()" class="w-1/2 bg-indigo-400 text-gray-900 font-bold py-2 rounded-xl text-sm">Terapkan</button>
-      </div>
+    <div class="form-group">
+      <label>Nomor Polisi (Nopol)</label>
+      <input type="text" id="nopol" placeholder="B 1234 ABC">
     </div>
+
+    <button class="btn-primary" onclick="generateAndPrint()">Cetak Thermal (RawBT)</button>
+    
+    <!-- Preview Struk -->
+    <div id="receiptPreview" class="receipt-preview" style="display:none;"></div>
   </div>
 
-  <!-- JavaScript Integration -->
   <script>
-    lucide.createIcons();
-
-    const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzAqk8wNmBDwkKMk3Kf76d_MyJiuh299_lDMTZEMbLFNebFbjMges2ZZ4DODWAibQvA/exec";
-    let globalDataSPBU = null;
-
-    // Load Data dari Database
-    async function fetchDataSPBU() {
-      const statusText = document.getElementById('status-text');
-      statusText.innerText = 'Menghubungkan...';
-      statusText.className = 'text-yellow-400';
-
-      if (!GAS_WEB_APP_URL) {
-        statusText.innerText = 'URL API Kosong!';
-        statusText.className = 'text-red-400';
-        return;
-      }
-
-      try {
-        const response = await fetch(GAS_WEB_APP_URL);
-        const result = await response.json();
-        
-        globalDataSPBU = result;
-        statusText.innerText = 'Terhubung';
-        statusText.className = 'text-emerald-400';
-      } catch (error) {
-        console.error("Fetch Error:", error);
-        statusText.innerText = 'Gagal terhubung';
-        statusText.className = 'text-red-400';
+    function showSection(id) {
+      document.querySelectorAll('.section-view').forEach(el => el.classList.remove('active-view'));
+      if(id !== 'dashboard') {
+        document.getElementById(id).classList.add('active-view');
       }
     }
 
-    // Modal Control
-    function openMenu(menuName) {
-      const modalMap = {
-        'POM': 'modal-pom',
-        'Histori': 'modal-histori',
-        'Operator': 'modal-operator',
-        'BBM': 'modal-bbm',
-        'SPBU': 'modal-spbu',
-        'Arsip': 'modal-arsip',
-        'Struk': 'modal-struk',
-        'Font': 'modal-font'
-      };
-
-      const targetId = modalMap[menuName];
-      if (targetId) {
-        if (menuName === 'Histori') renderHistori();
-        document.getElementById(targetId).classList.remove('hidden');
-      }
+    function setNominal(val) {
+      document.getElementById('totalBayar').value = val;
     }
 
-    function closeModal(modalId) {
-      document.getElementById(modalId).classList.add('hidden');
+    function generateAndPrint() {
+      const bbm = document.getElementById('jenisBBM').value;
+      const total = parseInt(document.getElementById('totalBayar').value) || 0;
+      const nopol = document.getElementById('nopol').value || "-";
+      const tgl = new Date().toLocaleString('id-ID');
+
+      const textReceipt = 
+`        SPBU BANYUMENENG
+================================
+Tanggal : ${tgl}
+Nopol   : ${nopol}
+Produk  : ${bbm}
+Total   : Rp ${total.toLocaleString('id-ID')}
+================================
+    Terima Kasih / Selamat Jalan
+`;
+
+      // Tampilkan Preview Struk Teks
+      const prevEl = document.getElementById('receiptPreview');
+      prevEl.style.display = 'block';
+      prevEl.innerText = textReceipt;
+
+      // Cetak Langsung ke Printer Bluetooth via RawBT Intent
+      const rawbtUrl = "intent:" + encodeURIComponent(textReceipt) + "#Intent;scheme=rawbt;package=ru.is5.rawbtprinter;end;";
+      window.location.href = rawbtUrl;
     }
-
-    // Render Riwayat Transaksi ke Modal Histori
-    function renderHistori() {
-      const container = document.getElementById('histori-list');
-      if (!globalDataSPBU || !globalDataSPBU.transaksi || globalDataSPBU.transaksi.length === 0) {
-        container.innerHTML = `<p class="text-gray-400">Belum ada riwayat transaksi tersimpan.</p>`;
-        return;
-      }
-
-      let html = '';
-      globalDataSPBU.transaksi.slice().reverse().forEach(item => {
-        html += `
-          <div class="bg-gray-700/60 p-2.5 rounded-xl border border-gray-600/50">
-            <div class="flex justify-between font-bold text-gray-200">
-              <span>${item.jenis_bbm || 'BBM'}</span>
-              <span class="text-emerald-400">Rp ${item.total || 0}</span>
-            </div>
-            <div class="flex justify-between text-[10px] text-gray-400 mt-1">
-              <span>${item.liter || 0} Liter | Op: ${item.operator || '-'}</span>
-              <span>${item.tanggal || ''}</span>
-            </div>
-          </div>
-        `;
-      });
-      container.innerHTML = html;
-    }
-
-    // Kirim Data Baru ke Apps Script
-    async function simpanData(event, tipeData) {
-      event.preventDefault();
-      
-      let payload = { action: tipeData };
-
-      if (tipeData === 'Transaksi') {
-        payload = {
-          ...payload,
-          id: "TRX-" + Date.now(),
-          tanggal: new Date().toLocaleString('id-ID'),
-          jenis_bbm: document.getElementById('input-bbm').value,
-          liter: document.getElementById('input-liter').value,
-          total: document.getElementById('input-total').value,
-          operator: document.getElementById('input-operator').value
-        };
-      } else if (tipeData === 'Operator') {
-        payload.nama = document.getElementById('op-nama').value;
-      } else if (tipeData === 'Harga_BBM') {
-        payload.nama_bbm = document.getElementById('bbm-nama').value;
-        payload.harga = document.getElementById('bbm-harga').value;
-      } else if (tipeData === 'Profil_SPBU') {
-        payload.nama_spbu = document.getElementById('spbu-nama').value;
-        payload.alamat = document.getElementById('spbu-alamat').value;
-      }
-
-      const btn = event.target.querySelector('button[type="submit"]');
-      const textAwal = btn.innerText;
-      btn.innerText = 'Menyimpan...';
-      btn.disabled = true;
-
-      try {
-        await fetch(GAS_WEB_APP_URL, {
-          method: 'POST',
-          mode: 'no-cors',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload)
-        });
-
-        alert(`Data ${tipeData} berhasil dikirim!`);
-        event.target.reset();
-        const modalId = event.target.closest('[id^="modal-"]').id;
-        closeModal(modalId);
-        fetchDataSPBU();
-      } catch (error) {
-        alert('Gagal menyimpan: ' + error.message);
-      } finally {
-        btn.innerText = textAwal;
-        btn.disabled = false;
-      }
-    }
-
-    // Terapkan File Font Kustom
-    function applyCustomFont() {
-      const fileInput = document.getElementById('font-file-input');
-      const file = fileInput.files[0];
-
-      if (!file) {
-        alert("Pilih file font (.ttf/.otf) terlebih dahulu!");
-        return;
-      }
-
-      const reader = new FileReader();
-      reader.onload = function(e) {
-        const font = new FontFace('StrukCustomFont', e.target.result);
-        font.load().then(function(loadedFont) {
-          document.fonts.add(loadedFont);
-          alert("Font kustom berhasil diterapkan pada preview struk!");
-          closeModal('modal-font');
-        }).catch(function(err) {
-          alert("Gagal memuat font: " + err);
-        });
-      };
-      reader.readAsArrayBuffer(file);
-    }
-
-    document.addEventListener('DOMContentLoaded', fetchDataSPBU);
   </script>
 </body>
 </html>
