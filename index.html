@@ -170,6 +170,59 @@
     }
 
     document.addEventListener('DOMContentLoaded', fetchDataSPBU);
+
+    // Buka Modal berdasarkan Menu yang diklik
+function openMenu(menuName) {
+  if (menuName === 'POM') {
+    document.getElementById('modal-pom').classList.remove('hidden');
+  } else {
+    alert(`Menu [${menuName}] sedang dalam tahap pembuatan modal.`);
+  }
+}
+
+// Tutup Modal
+function closeModal(modalId) {
+  document.getElementById(modalId).classList.add('hidden');
+}
+
+// Kirim Data Transaksi Baru ke Google Sheets via doPost
+async function simpanTransaksi(event) {
+  event.preventDefault();
+  
+  const payload = {
+    id: "TRX-" + Date.now(),
+    tanggal: new Date().toLocaleString('id-ID'),
+    jenis_bbm: document.getElementById('input-bbm').value,
+    liter: document.getElementById('input-liter').value,
+    total: document.getElementById('input-total').value,
+    operator: document.getElementById('input-operator').value
+  };
+
+  try {
+    const btn = event.target.querySelector('button[type="submit"]');
+    btn.innerText = 'Menyimpan...';
+    btn.disabled = true;
+
+    // Mengirim data ke URL Google Apps Script yang ada di Editor
+    await fetch(GAS_WEB_APP_URL, {
+      method: 'POST',
+      mode: 'no-cors', // Penting untuk menghindari batasan CORS dari Google Apps Script
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+
+    alert('Transaksi berhasil disimpan ke Google Sheets!');
+    closeModal('modal-pom');
+    event.target.reset();
+  } catch (error) {
+    alert('Gagal menyimpan transaksi: ' + error.message);
+  } finally {
+    const btn = event.target.querySelector('button[type="submit"]');
+    btn.innerText = 'Simpan';
+    btn.disabled = false;
+  }
+}
+    
   </script>
 
   <!-- Modal POM / Catat Transaksi -->
