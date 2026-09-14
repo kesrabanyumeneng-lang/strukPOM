@@ -14,6 +14,25 @@
       color: #f3f4f6;
       font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     }
+    .font-custom-struk {
+      font-family: 'StrukCustomFont', monospace;
+    }
+    @media print {
+      body * {
+        visibility: hidden;
+      }
+      #area-cetak-struk, #area-cetak-struk * {
+        visibility: visible;
+      }
+      #area-cetak-struk {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        color: black;
+        background: white;
+      }
+    }
   </style>
 </head>
 <body class="p-4 max-w-md mx-auto flex flex-col min-h-screen justify-between">
@@ -35,7 +54,7 @@
       </button>
     </header>
 
-    <!-- Status Koneksi Google Sheets API -->
+    <!-- Status Koneksi Database -->
     <div id="status-card" class="bg-gray-800/80 p-3 rounded-xl border border-gray-700/50 mb-4 text-xs text-gray-300 flex justify-between items-center">
       <span>Status Database: <strong id="status-text" class="text-yellow-400">Menghubungkan...</strong></span>
       <button onclick="fetchDataSPBU()" class="bg-gray-700 hover:bg-gray-600 px-2 py-1 rounded text-white text-xs">Refresh</button>
@@ -179,11 +198,11 @@
   <!-- Modal 3: Operator -->
   <div id="modal-operator" class="hidden fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-50">
     <div class="bg-gray-800 p-6 rounded-2xl w-full max-w-sm border border-gray-700">
-      <h3 class="text-lg font-bold mb-4">Kelola Operator</h3>
+      <h3 class="text-lg font-bold mb-4">Tambah Operator</h3>
       <form onsubmit="simpanData(event, 'Operator')">
         <div class="mb-4">
           <label class="block text-xs text-gray-400 mb-1">Nama Operator Baru</label>
-          <input type="text" id="op-nama" required class="w-full bg-gray-700 text-white p-2 rounded-xl border border-gray-600 text-sm" placeholder="Ahmad / Zain">
+          <input type="text" id="op-nama" required class="w-full bg-gray-700 text-white p-2 rounded-xl border border-gray-600 text-sm" placeholder="Contoh: Ahmad">
         </div>
         <div class="flex space-x-2">
           <button type="button" onclick="closeModal('modal-operator')" class="w-1/2 bg-gray-600 py-2 rounded-xl text-sm font-medium">Batal</button>
@@ -199,7 +218,7 @@
       <h3 class="text-lg font-bold mb-4">Update Harga BBM</h3>
       <form onsubmit="simpanData(event, 'Harga_BBM')">
         <div class="mb-3">
-          <label class="block text-xs text-gray-400 mb-1">Nama BBM</label>
+          <label class="block text-xs text-gray-400 mb-1">Nama Jenis BBM</label>
           <input type="text" id="bbm-nama" required class="w-full bg-gray-700 text-white p-2 rounded-xl border border-gray-600 text-sm" placeholder="Pertalite / Pertamax">
         </div>
         <div class="mb-4">
@@ -220,7 +239,7 @@
       <h3 class="text-lg font-bold mb-4">Edit Informasi SPBU</h3>
       <form onsubmit="simpanData(event, 'Profil_SPBU')">
         <div class="mb-3">
-          <label class="block text-xs text-gray-400 mb-1">Nama SPBU / Perusahaan</label>
+          <label class="block text-xs text-gray-400 mb-1">Nama / Kode SPBU</label>
           <input type="text" id="spbu-nama" required class="w-full bg-gray-700 text-white p-2 rounded-xl border border-gray-600 text-sm" placeholder="SPBU PASTI PAS 44.501.01">
         </div>
         <div class="mb-4">
@@ -235,28 +254,48 @@
     </div>
   </div>
 
-  <!-- Modal 6: Arsip Gambar -->
+  <!-- Modal 6: Arsip Gambar Struk -->
   <div id="modal-arsip" class="hidden fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-50">
     <div class="bg-gray-800 p-6 rounded-2xl w-full max-w-sm border border-gray-700 text-center">
-      <h3 class="text-lg font-bold mb-3">Arsip Gambar</h3>
-      <p class="text-xs text-gray-400 mb-4">Belum ada struk tersimpan sebagai gambar.</p>
+      <h3 class="text-lg font-bold mb-3">Arsip Struk</h3>
+      <div id="arsip-container" class="text-xs text-gray-400 mb-4 min-h-[100px] flex items-center justify-center border border-dashed border-gray-700 rounded-xl p-4">
+        Belum ada gambar struk tersimpan.
+      </div>
       <button onclick="closeModal('modal-arsip')" class="w-full bg-gray-600 py-2 rounded-xl text-sm font-medium">Tutup</button>
     </div>
   </div>
 
-  <!-- Modal 7: Struk & Cetak -->
+  <!-- Modal 7: Struk & Simulator Cetak -->
   <div id="modal-struk" class="hidden fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-50">
-    <div class="bg-gray-800 p-6 rounded-2xl w-full max-w-sm border border-gray-700 text-center">
-      <h3 class="text-lg font-bold mb-2">Preview Struk</h3>
-      <div class="bg-white text-black p-4 rounded text-left font-mono text-xs mb-4 shadow">
-        <p class="text-center font-bold">SPBU 44.501.01</p>
-        <p class="text-center text-[10px] border-b pb-1 mb-2">Jl. Banyumeneng</p>
-        <p>Tgl: 15/09/2026 08:30</p>
-        <p>BBM: Pertalite</p>
-        <p>Liter: 10.00 L</p>
-        <p>Total: Rp 100.000</p>
-        <p class="border-t mt-2 pt-1 text-center">Terima Kasih</p>
+    <div class="bg-gray-800 p-6 rounded-2xl w-full max-w-sm border border-gray-700 text-center max-h-[90vh] overflow-y-auto">
+      <h3 class="text-lg font-bold mb-3">Preview Struk</h3>
+      
+      <!-- Struk Display Target Print -->
+      <div id="area-cetak-struk" class="bg-white text-black p-4 rounded text-left font-mono font-custom-struk text-xs mb-4 shadow">
+        <p id="preview-nama" class="text-center font-bold">SPBU 44.501.01</p>
+        <p id="preview-alamat" class="text-center text-[10px] border-b border-black pb-1 mb-2">Desa Banyumeneng</p>
+        <div class="space-y-0.5 text-[11px]">
+          <p>Tgl: <span id="preview-tgl">15/09/2026</span></p>
+          <p>BBM: <span id="preview-bbm">Pertalite</span></p>
+          <p>Liter: <span id="preview-liter">10.00</span> L</p>
+          <p class="font-bold">Total: Rp <span id="preview-total">100.000</span></p>
+          <p>Op: <span id="preview-operator">Zain</span></p>
+        </div>
+        <p class="border-t border-black mt-2 pt-1 text-center text-[10px]">Terima Kasih & Selamat Jalan</p>
       </div>
+
+      <!-- Quick Edit Struk -->
+      <div class="text-left mb-4 space-y-2 text-xs">
+        <div>
+          <label class="text-gray-400">Ubah Nama BBM:</label>
+          <input type="text" value="Pertalite" oninput="document.getElementById('preview-bbm').innerText=this.value" class="w-full bg-gray-700 p-1.5 rounded border border-gray-600 text-white mt-1">
+        </div>
+        <div>
+          <label class="text-gray-400">Ubah Total Rp:</label>
+          <input type="text" value="100.000" oninput="document.getElementById('preview-total').innerText=this.value" class="w-full bg-gray-700 p-1.5 rounded border border-gray-600 text-white mt-1">
+        </div>
+      </div>
+
       <div class="flex space-x-2">
         <button onclick="closeModal('modal-struk')" class="w-1/2 bg-gray-600 py-2 rounded-xl text-sm font-medium">Tutup</button>
         <button onclick="window.print()" class="w-1/2 bg-emerald-600 hover:bg-emerald-500 py-2 rounded-xl text-sm font-medium">Cetak</button>
@@ -264,14 +303,15 @@
     </div>
   </div>
 
-  <!-- Modal 8: Font Upload -->
+  <!-- Modal 8: Custom Font Upload -->
   <div id="modal-font" class="hidden fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-50">
     <div class="bg-gray-800 p-6 rounded-2xl w-full max-w-sm border border-gray-700">
       <h3 class="text-lg font-bold mb-3">Upload Custom Font</h3>
-      <input type="file" accept=".ttf,.otf" class="w-full text-xs text-gray-400 mb-4 bg-gray-700 p-2 rounded-xl">
+      <p class="text-xs text-gray-400 mb-3">Pilih file font (.ttf / .otf) dari perangkat untuk mengubah gaya tulisan struk.</p>
+      <input type="file" id="font-file-input" accept=".ttf,.otf" class="w-full text-xs text-gray-400 mb-4 bg-gray-700 p-2 rounded-xl border border-gray-600">
       <div class="flex space-x-2">
         <button onclick="closeModal('modal-font')" class="w-1/2 bg-gray-600 py-2 rounded-xl text-sm font-medium">Batal</button>
-        <button onclick="alert('Font tersimpan lokal.'); closeModal('modal-font');" class="w-1/2 bg-indigo-400 text-gray-900 font-bold py-2 rounded-xl text-sm">Upload</button>
+        <button onclick="applyCustomFont()" class="w-1/2 bg-indigo-400 text-gray-900 font-bold py-2 rounded-xl text-sm">Terapkan</button>
       </div>
     </div>
   </div>
@@ -280,19 +320,17 @@
   <script>
     lucide.createIcons();
 
-    // URL Web App Google Apps Script
     const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzAqk8wNmBDwkKMk3Kf76d_MyJiuh299_lDMTZEMbLFNebFbjMges2ZZ4DODWAibQvA/exec";
-
     let globalDataSPBU = null;
 
-    // Fetch Data dari Google Sheets
+    // Load Data dari Database
     async function fetchDataSPBU() {
       const statusText = document.getElementById('status-text');
-      statusText.innerText = 'Memuat data...';
+      statusText.innerText = 'Menghubungkan...';
       statusText.className = 'text-yellow-400';
 
       if (!GAS_WEB_APP_URL) {
-        statusText.innerText = 'URL API belum terpasang!';
+        statusText.innerText = 'URL API Kosong!';
         statusText.className = 'text-red-400';
         return;
       }
@@ -304,15 +342,14 @@
         globalDataSPBU = result;
         statusText.innerText = 'Terhubung';
         statusText.className = 'text-emerald-400';
-        console.log("Data terload:", globalDataSPBU);
       } catch (error) {
-        console.error("Error:", error);
+        console.error("Fetch Error:", error);
         statusText.innerText = 'Gagal terhubung';
         statusText.className = 'text-red-400';
       }
     }
 
-    // Fungsi Pengatur Buka Modal Menu
+    // Modal Control
     function openMenu(menuName) {
       const modalMap = {
         'POM': 'modal-pom',
@@ -332,22 +369,37 @@
       }
     }
 
-    // Tutup Modal
     function closeModal(modalId) {
       document.getElementById(modalId).classList.add('hidden');
     }
 
-    // Render Data Histori
+    // Render Riwayat Transaksi ke Modal Histori
     function renderHistori() {
       const container = document.getElementById('histori-list');
-      if (!globalDataSPBU || !globalDataSPBU.profil) {
-        container.innerHTML = `<p class="text-gray-400">Belum ada data transaksi tersimpan.</p>`;
+      if (!globalDataSPBU || !globalDataSPBU.transaksi || globalDataSPBU.transaksi.length === 0) {
+        container.innerHTML = `<p class="text-gray-400">Belum ada riwayat transaksi tersimpan.</p>`;
         return;
       }
-      container.innerHTML = `<p class="text-emerald-400">Database siap & terhubung!</p>`;
+
+      let html = '';
+      globalDataSPBU.transaksi.slice().reverse().forEach(item => {
+        html += `
+          <div class="bg-gray-700/60 p-2.5 rounded-xl border border-gray-600/50">
+            <div class="flex justify-between font-bold text-gray-200">
+              <span>${item.jenis_bbm || 'BBM'}</span>
+              <span class="text-emerald-400">Rp ${item.total || 0}</span>
+            </div>
+            <div class="flex justify-between text-[10px] text-gray-400 mt-1">
+              <span>${item.liter || 0} Liter | Op: ${item.operator || '-'}</span>
+              <span>${item.tanggal || ''}</span>
+            </div>
+          </div>
+        `;
+      });
+      container.innerHTML = html;
     }
 
-    // General Function Kirim Data ke Google Sheets
+    // Kirim Data Baru ke Apps Script
     async function simpanData(event, tipeData) {
       event.preventDefault();
       
@@ -363,13 +415,22 @@
           total: document.getElementById('input-total').value,
           operator: document.getElementById('input-operator').value
         };
+      } else if (tipeData === 'Operator') {
+        payload.nama = document.getElementById('op-nama').value;
+      } else if (tipeData === 'Harga_BBM') {
+        payload.nama_bbm = document.getElementById('bbm-nama').value;
+        payload.harga = document.getElementById('bbm-harga').value;
+      } else if (tipeData === 'Profil_SPBU') {
+        payload.nama_spbu = document.getElementById('spbu-nama').value;
+        payload.alamat = document.getElementById('spbu-alamat').value;
       }
 
-      try {
-        const btn = event.target.querySelector('button[type="submit"]');
-        btn.innerText = 'Menyimpan...';
-        btn.disabled = true;
+      const btn = event.target.querySelector('button[type="submit"]');
+      const textAwal = btn.innerText;
+      btn.innerText = 'Menyimpan...';
+      btn.disabled = true;
 
+      try {
         await fetch(GAS_WEB_APP_URL, {
           method: 'POST',
           mode: 'no-cors',
@@ -381,15 +442,37 @@
         event.target.reset();
         const modalId = event.target.closest('[id^="modal-"]').id;
         closeModal(modalId);
+        fetchDataSPBU();
       } catch (error) {
         alert('Gagal menyimpan: ' + error.message);
       } finally {
-        const btn = event.target.querySelector('button[type="submit"]');
-        if (btn) {
-          btn.innerText = 'Simpan';
-          btn.disabled = false;
-        }
+        btn.innerText = textAwal;
+        btn.disabled = false;
       }
+    }
+
+    // Terapkan File Font Kustom
+    function applyCustomFont() {
+      const fileInput = document.getElementById('font-file-input');
+      const file = fileInput.files[0];
+
+      if (!file) {
+        alert("Pilih file font (.ttf/.otf) terlebih dahulu!");
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const font = new FontFace('StrukCustomFont', e.target.result);
+        font.load().then(function(loadedFont) {
+          document.fonts.add(loadedFont);
+          alert("Font kustom berhasil diterapkan pada preview struk!");
+          closeModal('modal-font');
+        }).catch(function(err) {
+          alert("Gagal memuat font: " + err);
+        });
+      };
+      reader.readAsArrayBuffer(file);
     }
 
     document.addEventListener('DOMContentLoaded', fetchDataSPBU);
